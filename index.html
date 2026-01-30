@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Task Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .app-box {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Input area */
+        .input-section {
+            padding: 25px;
+            background-color: #3498db;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .add-task-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        #taskInput {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 15px;
+        }
+
+        #taskInput:focus {
+            outline: 2px solid #2980b9;
+        }
+
+        #addBtn {
+            padding: 12px 25px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        #addBtn:hover {
+            background-color: #229954;
+        }
+
+        #searchBox {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Controls section */
+        .controls-bar {
+            padding: 15px 25px;
+            background-color: #ecf0f1;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .filter-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-btn {
+            padding: 6px 15px;
+            border: 2px solid #3498db;
+            background: white;
+            color: #3498db;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .filter-btn:hover {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .filter-btn.active {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .task-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .stat {
+            display: flex;
+            gap: 5px;
+        }
+
+        .stat-num {
+            font-weight: bold;
+            color: #3498db;
+        }
+
+        .clear-btn {
+            padding: 8px 15px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .clear-btn:hover {
+            background-color: #c0392b;
+        }
+
+        /* Task list */
+        .task-list {
+            padding: 25px;
+            min-height: 350px;
+        }
+
+        .task {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border-left: 3px solid #3498db;
+        }
+
+        .task:hover {
+            background-color: #e9ecef;
+        }
+
+        .task.done {
+            opacity: 0.6;
+            border-left-color: #27ae60;
+        }
+
+        .task.done .task-text {
+            text-decoration: line-through;
+            color: #95a5a6;
+        }
+
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .task-text {
+            flex: 1;
+            font-size: 15px;
+            color: #2c3e50;
+        }
+
+        .task-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .edit-btn {
+            padding: 5px 12px;
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .edit-btn:hover {
+            background-color: #e67e22;
+        }
+
+        .delete-btn {
+            padding: 5px 12px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 50px 20px;
+            color: #95a5a6;
+        }
+
+        .empty-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+
+        /* Edit modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            max-width: 450px;
+            width: 90%;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 15px;
+            margin-bottom: 20px;
+        }
+
+        .modal-input:focus {
+            outline: 2px solid #3498db;
+            border-color: transparent;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .save-btn {
+            padding: 10px 20px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .save-btn:hover {
+            background-color: #229954;
+        }
+
+        .cancel-btn {
+            padding: 10px 20px;
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .cancel-btn:hover {
+            background-color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Task Manager</h1>
+            <p class="subtitle">Keep track of your daily tasks</p>
+        </header>
+
+        <div class="app-box">
+            <!-- Input Section -->
+            <div class="input-section">
+                <div class="add-task-form">
+                    <input 
+                        type="text" 
+                        id="taskInput" 
+                        placeholder="What do you need to do?"
+                    >
+                    <button id="addBtn">Add Task</button>
+                </div>
+                <input 
+                    type="text" 
+                    id="searchBox" 
+                    placeholder="Search tasks..."
+                >
+            </div>
+
+            <!-- Controls Bar -->
+            <div class="controls-bar">
+                <div class="filter-btns">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="active">Active</button>
+                    <button class="filter-btn" data-filter="completed">Completed</button>
+                </div>
+
+                <div class="task-stats">
+                    <div class="stat">
+                        <span>Total:</span>
+                        <span class="stat-num" id="totalCount">0</span>
+                    </div>
+                    <div class="stat">
+                        <span>Active:</span>
+                        <span class="stat-num" id="activeCount">0</span>
+                    </div>
+                    <div class="stat">
+                        <span>Done:</span>
+                        <span class="stat-num" id="doneCount">0</span>
+                    </div>
+                </div>
+
+                <button class="clear-btn" id="clearDoneBtn">Clear Completed</button>
+            </div>
+
+            <!-- Task List -->
+            <div class="task-list" id="taskList">
+                <div class="empty-message">
+                    <div class="empty-icon">📋</div>
+                    <h3>No tasks yet</h3>
+                    <p>Add a task to get started!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-box">
+            <h2 class="modal-title">Edit Task</h2>
+            <input 
+                type="text" 
+                id="editInput" 
+                class="modal-input"
+            >
+            <div class="modal-buttons">
+                <button class="cancel-btn" id="cancelBtn">Cancel</button>
+                <button class="save-btn" id="saveBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get all the elements we need
+        const taskInput = document.getElementById('taskInput');
+        const addBtn = document.getElementById('addBtn');
+        const searchBox = document.getElementById('searchBox');
+        const taskList = document.getElementById('taskList');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const clearDoneBtn = document.getElementById('clearDoneBtn');
+        const totalCount = document.getElementById('totalCount');
+        const activeCount = document.getElementById('activeCount');
+        const doneCount = document.getElementById('doneCount');
+        const editModal = document.getElementById('editModal');
+        const editInput = document.getElementById('editInput');
+        const saveBtn = document.getElementById('saveBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+
+        // Variables to track state
+        let tasks = [];
+        let currentFilter = 'all';
+        let editingId = null;
+
+        // Load tasks from localStorage when page loads
+        function loadTasks() {
+            const saved = localStorage.getItem('myTasks');
+            if (saved) {
+                tasks = JSON.parse(saved);
+            }
+        }
+
+        // Save tasks to localStorage
+        function saveTasks() {
+            localStorage.setItem('myTasks', JSON.stringify(tasks));
+        }
+
+        // Add a new task
+        function addTask() {
+            const text = taskInput.value.trim();
+            
+            // Don't add if empty
+            if (text === '') {
+                return;
+            }
+
+            // Create new task object
+            const newTask = {
+                id: Date.now(),
+                text: text,
+                completed: false,
+                createdAt: new Date().toISOString()
+            };
+
+            // Add to beginning of array
+            tasks.unshift(newTask);
+            
+            // Save and update display
+            saveTasks();
+            displayTasks();
+            
+            // Clear input
+            taskInput.value = '';
+        }
+
+        // Delete a task
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            saveTasks();
+            displayTasks();
+        }
+
+        // Toggle task completion
+        function toggleTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                saveTasks();
+                displayTasks();
+            }
+        }
+
+        // Show edit modal
+        function showEditModal(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                editingId = id;
+                editInput.value = task.text;
+                editModal.classList.add('show');
+                editInput.focus();
+            }
+        }
+
+        // Hide edit modal
+        function hideEditModal() {
+            editModal.classList.remove('show');
+            editInput.value = '';
+            editingId = null;
+        }
+
+        // Save edited task
+        function saveEdit() {
+            const newText = editInput.value.trim();
+            
+            if (newText === '') {
+                return;
+            }
+
+            const task = tasks.find(t => t.id === editingId);
+            if (task) {
+                task.text = newText;
+                saveTasks();
+                displayTasks();
+                hideEditModal();
+            }
+        }
+
+        // Clear completed tasks
+        function clearCompleted() {
+            tasks = tasks.filter(task => !task.completed);
+            saveTasks();
+            displayTasks();
+        }
+
+        // Get filtered tasks
+        function getFilteredTasks() {
+            let filtered = tasks;
+
+            // Apply filter
+            if (currentFilter === 'active') {
+                filtered = tasks.filter(t => !t.completed);
+            } else if (currentFilter === 'completed') {
+                filtered = tasks.filter(t => t.completed);
+            }
+
+            // Apply search
+            const searchTerm = searchBox.value.toLowerCase().trim();
+            if (searchTerm) {
+                filtered = filtered.filter(t => 
+                    t.text.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            return filtered;
+        }
+
+        // Display tasks
+        function displayTasks() {
+            const filtered = getFilteredTasks();
+
+            // Show empty message if no tasks
+            if (filtered.length === 0) {
+                if (tasks.length === 0) {
+                    taskList.innerHTML = `
+                        <div class="empty-message">
+                            <div class="empty-icon">📋</div>
+                            <h3>No tasks yet</h3>
+                            <p>Add a task to get started!</p>
+                        </div>
+                    `;
+                } else {
+                    taskList.innerHTML = `
+                        <div class="empty-message">
+                            <div class="empty-icon">🔍</div>
+                            <h3>No tasks found</h3>
+                            <p>Try a different search or filter</p>
+                        </div>
+                    `;
+                }
+            } else {
+                // Create HTML for each task
+                let html = '';
+                filtered.forEach(task => {
+                    html += `
+                        <div class="task ${task.completed ? 'done' : ''}" data-id="${task.id}">
+                            <input 
+                                type="checkbox" 
+                                class="task-checkbox" 
+                                ${task.completed ? 'checked' : ''}
+                            >
+                            <span class="task-text">${task.text}</span>
+                            <div class="task-buttons">
+                                <button class="edit-btn">Edit</button>
+                                <button class="delete-btn">Delete</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                taskList.innerHTML = html;
+            }
+
+            // Update stats
+            updateStats();
+        }
+
+        // Update statistics
+        function updateStats() {
+            const total = tasks.length;
+            const completed = tasks.filter(t => t.completed).length;
+            const active = total - completed;
+
+            totalCount.textContent = total;
+            activeCount.textContent = active;
+            doneCount.textContent = completed;
+        }
+
+        // Handle clicks on task list
+        function handleTaskClick(e) {
+            const taskElement = e.target.closest('.task');
+            if (!taskElement) return;
+
+            const id = parseInt(taskElement.dataset.id);
+
+            // Check which button was clicked
+            if (e.target.classList.contains('delete-btn')) {
+                deleteTask(id);
+            } else if (e.target.classList.contains('edit-btn')) {
+                showEditModal(id);
+            } else if (e.target.classList.contains('task-checkbox')) {
+                toggleTask(id);
+            }
+        }
+
+        // Handle filter button clicks
+        function handleFilterClick(e) {
+            const filter = e.target.dataset.filter;
+            if (!filter) return;
+
+            // Update active button
+            filterBtns.forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
+
+            // Update filter and display
+            currentFilter = filter;
+            displayTasks();
+        }
+
+        // Set up event listeners
+        function setupListeners() {
+            // Add task
+            addBtn.addEventListener('click', addTask);
+            
+            // Add task with Enter key
+            taskInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    addTask();
+                }
+            });
+
+            // Search
+            searchBox.addEventListener('input', displayTasks);
+
+            // Task clicks (edit, delete, toggle)
+            taskList.addEventListener('click', handleTaskClick);
+
+            // Filter buttons
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', handleFilterClick);
+            });
+
+            // Clear completed
+            clearDoneBtn.addEventListener('click', clearCompleted);
+
+            // Modal buttons
+            saveBtn.addEventListener('click', saveEdit);
+            cancelBtn.addEventListener('click', hideEditModal);
+
+            // Save edit with Enter key
+            editInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    saveEdit();
+                }
+            });
+
+            // Close modal when clicking outside
+            editModal.addEventListener('click', (e) => {
+                if (e.target === editModal) {
+                    hideEditModal();
+                }
+            });
+        }
+
+        // Initialize app
+        function init() {
+            loadTasks();
+            displayTasks();
+            setupListeners();
+        }
+
+        // Start the app when page loads
+        init();
+    </script>
+</body>
+</html>
